@@ -48,3 +48,15 @@ def delete_purchase(user_id, item):
     """, (user_id, item))
     conn.commit()
     conn.close()
+
+def get_monthly_details(user_id, year_month):
+    conn = sqlite3.connect('kakeibo.db')
+    c = conn.cursor()
+    c.execute("""
+        SELECT item, price, date FROM purchases
+        WHERE user_id=? AND strftime('%Y-%m', date)=?
+        ORDER BY date
+    """, (user_id, year_month))
+    rows = c.fetchall()
+    conn.close()
+    return rows
