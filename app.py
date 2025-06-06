@@ -4,7 +4,7 @@ from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 import os
 from dotenv import load_dotenv
-from db import init_db, add_purchase, delete_purchase, get_monthly_total
+from db import init_db, add_purchase, delete_purchase, get_monthly_total,get_monthly_details
 
 load_dotenv()
 app = Flask(__name__)
@@ -50,6 +50,25 @@ def handle_message(event):
             reply = f"今月の合計は {total} 円です。"
         else:
             reply = "形式が正しくありません。例: view または view 2024-12"
+    elif text.startswith("detail "):
+        parts = text.split()
+        if len(parts) == 2:
+            year_month = parts[1]
+            # YYYY-MM形式か簡単にチェック
+            import re
+            if not re.match(r"^\d{4}-\d{2}$", year_month):
+                reply = "形式が正しくありません。例: detail 2024-06"
+            else:
+                details = get_monthly_details(user_id, year_month)
+                if not details:
+                    reply = f"{year_month} の購入履歴はありません。"
+                else:
+                    lines = [f"{date} {item} : {price} 円" for item, price, date in details]
+                    total = sum(price for _, price, _ in details)
+                    lines.append(f"\n合計: {total} 円")
+                    reply = "\n".join(lines)
+        else:
+            reply = "形式が正しくありません。例: detail 2024-06"
     else:
         reply = "コマンドが不明です。buy / delete / view を使ってください。"
 
