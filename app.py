@@ -63,14 +63,32 @@ def handle_message(event):
                 if not details:
                     reply = f"{year_month} の購入履歴はありません。"
                 else:
-                    lines = [f"{date} {item} : {price} 円" for item, price, date in details]
+                    lines = [f" {item} : {price} 円" for item, price, date in details]
                     total = sum(price for _, price, _ in details)
                     lines.append(f"\n合計: {total} 円")
                     reply = "\n".join(lines)
         else:
             reply = "形式が正しくありません。例: detail 2024-06"
+     # 【追加】'help'コマンドの処理
+    elif text.lower() == 'help':
+        reply = """【家計簿Botの使い方】
+■ 登録
+buy <品目> <価格>
+
+■ 合計表示
+view (今月)
+view YYYY-MM (指定月)
+
+■ 明細表示
+detail YYYY-MM (指定月)
+
+■ 削除
+delete <品目> (今月分から)"""
+
+    # 【変更】どのコマンドにも一致しなかった場合
     else:
-        reply = "コマンドが不明です。buy / delete / view を使ってください。"
+        # 何もせずに処理を終了する
+        return
 
     line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
 
